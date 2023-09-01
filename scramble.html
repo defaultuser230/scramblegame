@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Scramble</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			min-height: 100vh; /* Ensure full viewport height */
+			background-color: #f0f0f0;
+		}
+
+		.container {
+			text-align: center;
+			background-color: #fff;
+			padding: 20px;
+			border-radius: 8px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+		}
+
+		#scrambled-word-div {
+			display: none; /* Initially hide the scrambled word */
+		}
+	</style>
+	<script type="text/javascript">
+		const list_words = ["Oviya", "Javascript", "book", "lesson", "teacher"];
+		let timeLimit = 1 * 60 * 1000; // 2 minutes in milliseconds
+
+		function scrambleLetters(word) {
+			const letters = word.split('');
+			for (let i = letters.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[letters[i], letters[j]] = [letters[j], letters[i]];
+			}
+			return letters.join('');
+		}
+
+		let wordsToScramble = [...list_words]; // Create a copy of the list
+		let correctGuesses = 0;
+		let timer; // Timer variable
+
+		function enableInput() {
+			const guessWordInput = document.getElementById("guess-word");
+			guessWordInput.disabled = false;
+			guessWordInput.focus(); // Set focus to the input field
+		}
+
+		function showNextWord() {
+			if (wordsToScramble.length === 0) {
+				alert("Congratulations! You've guessed all the words.");
+				clearTimeout(timer); // Clear the timer
+				return;
+			}
+
+			const nextWordIndex = Math.floor(Math.random() * wordsToScramble.length);
+			const nextWord = wordsToScramble[nextWordIndex];
+			wordsToScramble.splice(nextWordIndex, 1); // Remove guessed word
+			const scrambledWord = scrambleLetters(nextWord);
+
+			const guessWordInput = document.getElementById("guess-word");
+			guessWordInput.value = ""; // Clear input field
+			const resultElement = document.getElementById("result");
+			resultElement.textContent = ""; // Clear result text
+
+			const scrambledWordSpan = document.getElementById("scrambled-word-div");
+			scrambledWordSpan.textContent = scrambledWord;
+			scrambledWordSpan.style.display = "inline"; // Show the scrambled word
+			enableInput(); // Enable input for guessing
+
+			clearTimeout(timer); // Clear the previous timer
+			timer = setTimeout(timeIsUp, timeLimit); // Set a new timer
+		}
+
+		function timeIsUp() {
+			const guessWordInput = document.getElementById("guess-word");
+			guessWordInput.disabled = true; // Disable the input field
+			alert("Time's up! Thank you for playing.");
+		}
+
+		function checkWord() {
+			const guessedWord = document.getElementById("guess-word").value.toLowerCase(); // Convert to lowercase
+			console.log("Guessed word", guessedWord);
+			let isCorrect = false;
+			for (var i = 0; i < list_words.length; i++) {
+				if (guessedWord === list_words[i].toLowerCase()) {
+					isCorrect = true;
+					break;
+				}
+			}
+			const resultElement = document.getElementById("result");
+			if (isCorrect) {
+				resultElement.textContent = "Correct!";
+				correctGuesses++;
+				if (correctGuesses === list_words.length) {
+					resultElement.textContent = "Congratulations! All words matched!";
+					const guessWordInput = document.getElementById("guess-word");
+					guessWordInput.disabled = true;
+					clearTimeout(timer); // Clear the timer when all words are guessed
+				}
+			} else {
+				resultElement.textContent = "Try again.";
+			}
+		}
+
+		function playAgain() {
+			wordsToScramble = [...list_words]; // Reset words
+			correctGuesses = 0; // Reset correct guesses
+			const scrambledWordSpan = document.getElementById("scrambled-word-div");
+			scrambledWordSpan.style.display = "none"; // Hide the scrambled word
+			showNextWord(); // Show the first word
+		}
+	</script>
+</head>
+<body>
+	<div class="container">
+		<input type="text" name="guess word" value="" placeholder="GUESS WORD" id="guess-word" disabled>
+		<button onclick="enableInput(); showNextWord();">PLAY</button>
+		<button onclick="checkWord()">CHECK</button>
+		<button onclick="showNextWord()">NEXT</button>
+		<button onclick="playAgain()">PLAY AGAIN</button>
+		<div id="result"></div>
+		<div id="scrambled-word-div">
+			<span>Scrambled Word : </span><span id="scrambled-word"></span>
+		</div>
+	</div>
+</body>
+</html>
